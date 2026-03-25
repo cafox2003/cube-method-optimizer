@@ -11,6 +11,7 @@ import os
 import sys
 import csv
 import platform
+from collections import defaultdict
 from datetime import datetime
 
 from PyRubik import Scramble
@@ -19,13 +20,17 @@ from core.models import Method, SolveResult
 from core.dsl import method_from_file
 from core.cache import load_cache
 from solver.solver import MethodRunner, TIMEOUT
+from core.config import CONFIG
+from generation.parallel import run_parallel_solves
 
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-DSL_DIR = os.path.join("workspace", "stable", "dsl")
+NUM_SCRAMBLES  = CONFIG["generation"]["num_scrambles"]
+NUM_ALG_SOLVES = CONFIG["generation"]["num_alg_solves"]
+PARALLEL       = CONFIG["parallel"]["enabled"]
 
 # Constraint type prefixes — extend as new constraint types are added to the DSL
 _CONSTRAINT_PREFIXES = {
@@ -250,56 +255,110 @@ def generate_scrambles(num_scrambles: int) -> list:
     return [" ".join(Scramble.Cube3x3x3()) for _ in range(num_scrambles)]
 
 
+def _write_solves(method: Method, results: list[SolveResult], workspace_root: str):
+    """
+    Append a batch of SolveResults for one method to its solves CSV.
+    Called by the main process only — never from workers.
+    """
+    if not results:
+        return
+
+    path        = _solves_path(workspace_root, method.name)
+    file_exists = os.path.exists(path)
+    step_cols   = _step_names(results[0])
+    fieldnames  = ["scramble", "orientation"] + step_cols + ["total_moves"]
+
+    with open(path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists or os.path.getsize(path) == 0:
+            writer.writeheader()
+        for result in results:
+            row   = {"scramble": result.scramble, "orientation": result.orientation, "total_moves": 0}
+            total = 0
+            for step in result.steps:
+                row[step.name]  = step.solution
+                total          += _move_count(step.solution)
+            row["total_moves"] = total
+            writer.writerow(row)
+
+
 def generate_solves(scrambles_list: list, method_list: list, workspace_root: str):
     """
     For each method, solve every scramble and append results to
     data/solves/<method_name>.csv. Also serializes each method's feature
     vector to methods.csv.
 
+    Runs in parallel if parallel.enabled is true in config, otherwise
+    falls back to sequential execution.
+
     Columns: scramble, orientation, <step_name>..., total_moves
     """
     _ensure_dirs(workspace_root)
+
+    for method in method_list:
+        serialize_method(workspace_root, method)
+
+    if PARALLEL:
+        _generate_solves_parallel(scrambles_list, method_list, workspace_root)
+    else:
+        _generate_solves_sequential(scrambles_list, method_list, workspace_root)
+
+
+def _generate_solves_sequential(scrambles_list: list, method_list: list, workspace_root: str):
+    """Sequential fallback for generate_solves."""
     runner = MethodRunner(
         solver_path=_solver_path(),
         workspace_root=workspace_root,
         timeout=TIMEOUT,
     )
-
     for method in method_list:
-        serialize_method(workspace_root, method)
+        results = [runner.run(method, scramble) for scramble in scrambles_list]
+        _write_solves(method, results, workspace_root)
 
-        path = _solves_path(workspace_root, method.name)
-        file_exists = os.path.exists(path)
 
-        results = []
-        for scramble in scrambles_list:
-            result = runner.run(method, scramble)
-            results.append(result)
+def _generate_solves_parallel(scrambles_list: list, method_list: list, workspace_root: str):
+    """
+    Parallel implementation of generate_solves.
 
-        if not results:
-            continue
+    Builds a flat (method, scramble) task list across all methods, submits
+    them via run_parallel_solves, then groups results by method for writing.
+    CSV writes happen in the main process after all futures complete.
+    """
 
-        step_cols = _step_names(results[0])
-        fieldnames = ["scramble", "orientation"] + step_cols + ["total_moves"]
+    tasks = [
+        (method, scramble)
+        for method in method_list
+        for scramble in scrambles_list
+    ]
 
-        with open(path, "a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            if not file_exists or os.path.getsize(path) == 0:
-                writer.writeheader()
-            for result in results:
-                row = {"scramble": result.scramble, "orientation": result.orientation}
-                total = 0
-                for step in result.steps:
-                    row[step.name] = step.solution
-                    total += _move_count(step.solution)
-                row["total_moves"] = total
-                writer.writerow(row)
+    print(f"[parallel] Submitting {len(tasks)} tasks "
+          f"({len(method_list)} methods × {len(scrambles_list)} scrambles)")
+
+    paired_results = run_parallel_solves(tasks, workspace_root)
+
+    # Group results by method name, preserving method object for _write_solves
+    method_map  = {m.name: m for m in method_list}
+    grouped     = defaultdict(list)
+    for method, result in paired_results:
+        grouped[method.name].append(result)
+
+    for method_name, results in grouped.items():
+        _write_solves(method_map[method_name], results, workspace_root)
+
+    total    = len(paired_results)
+    expected = len(tasks)
+    if total < expected:
+        print(f"[WARN] {expected - total} tasks failed or were skipped.")
+    print(f"[parallel] {total}/{expected} solves completed.")
 
 
 def generate_algorithms(method_list: list, num_solves: int, workspace_root: str):
     """
-    Generate num_solves random scrambles and run solves for each method.
-    Cache writing is governed by each step's cache_alg setting in the DSL.
+    Generate num_solves random scrambles and run solves for each method
+    sequentially to warm the algorithm cache before parallel generation runs.
+
+    Always runs sequentially — cache warming is the goal here, and
+    concurrent writes during cold start add unnecessary risk.
     """
     runner = MethodRunner(
         solver_path=_solver_path(),
@@ -341,8 +400,8 @@ def evaluate_solves(method_list: list, workspace_root: str, scorer=score_method)
             continue
 
         non_step_cols = {"scramble", "orientation", "total_moves"}
-        step_cols = [c for c in solve_rows[0].keys() if c not in non_step_cols]
-        num_steps = len(step_cols)
+        step_cols     = [c for c in solve_rows[0].keys() if c not in non_step_cols]
+        num_steps     = len(step_cols)
 
         total_moves_sum = 0
         for row in solve_rows:
@@ -351,7 +410,7 @@ def evaluate_solves(method_list: list, workspace_root: str, scorer=score_method)
             except (KeyError, ValueError):
                 pass
 
-        num_rows = len(solve_rows)
+        num_rows           = len(solve_rows)
         avg_total_moves    = round(total_moves_sum / num_rows, 2) if num_rows else 0
         avg_moves_per_step = round(avg_total_moves / num_steps, 2) if num_steps else 0
 
@@ -364,7 +423,7 @@ def evaluate_solves(method_list: list, workspace_root: str, scorer=score_method)
             "num_algs":           _num_algs(workspace_root, method),
         }
 
-        score = scorer(eval_row)
+        score            = scorer(eval_row)
         eval_row["score"] = score
 
         # Write score back into methods.csv
@@ -387,7 +446,7 @@ def evaluate_solves(method_list: list, workspace_root: str, scorer=score_method)
         print("[WARN] No data to evaluate.")
         return
 
-    out_path = _eval_path(workspace_root)
+    out_path   = _eval_path(workspace_root)
     fieldnames = ["method", "total_solves", "avg_total_moves", "num_steps",
                   "avg_moves_per_step", "num_algs", "score"]
 
@@ -404,23 +463,24 @@ def evaluate_solves(method_list: list, workspace_root: str, scorer=score_method)
 # ---------------------------------------------------------------------------
 
 def main():
-    workspace = sys.argv[1] if len(sys.argv) > 1 else os.path.join("workspace", "stable")
-    dsl_dir   = os.path.join(workspace, "dsl")
+    default_ws = CONFIG["general"]["default_workspace"]
+    workspace  = sys.argv[1] if len(sys.argv) > 1 else default_ws
+    dsl_dir    = os.path.join(workspace, "dsl")
 
-    print("[1/4] Loading method...")
-    zz = method_from_file(os.path.join(dsl_dir, "zz_method.dsl"))
-    cfop = method_from_file(os.path.join(dsl_dir, "cfop_method.dsl"))
-    roux = method_from_file(os.path.join(dsl_dir, "roux_method.dsl"))
+    print("[1/4] Loading methods...")
+    zz        = method_from_file(os.path.join(dsl_dir, "zz_method.dsl"))
+    cfop      = method_from_file(os.path.join(dsl_dir, "cfop_method.dsl"))
+    roux      = method_from_file(os.path.join(dsl_dir, "roux_method.dsl"))
     beginners = method_from_file(os.path.join(dsl_dir, "beginners_method.dsl"))
-    petrus = method_from_file(os.path.join(dsl_dir, "petrus_method.dsl"))
-    apb = method_from_file(os.path.join(dsl_dir, "apb.dsl"))
-    methods = [zz, cfop, roux, beginners, petrus, apb]
+    petrus    = method_from_file(os.path.join(dsl_dir, "petrus_method.dsl"))
+    apb       = method_from_file(os.path.join(dsl_dir, "apb.dsl"))
+    methods   = [zz, cfop, roux, beginners, petrus, apb]
 
-    print("[2/4] Generating algorithms (20 solves)...")
-    generate_algorithms(methods, num_solves=20, workspace_root=workspace)
+    print(f"[2/4] Generating algorithms ({NUM_ALG_SOLVES} solves)...")
+    generate_algorithms(methods, num_solves=NUM_ALG_SOLVES, workspace_root=workspace)
 
-    print("[3/4] Generating solves (250 scrambles)...")
-    scrambles = generate_scrambles(250)
+    print(f"[3/4] Generating solves ({NUM_SCRAMBLES} scrambles)...")
+    scrambles = generate_scrambles(NUM_SCRAMBLES)
     generate_solves(scrambles, methods, workspace_root=workspace)
 
     print("[4/4] Evaluating solves...")
