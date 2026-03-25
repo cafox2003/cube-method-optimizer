@@ -20,18 +20,18 @@ from core.rotation import (
     _compose,
 )
 from core.cache import load_cache, append_cache
-
+from core.config import CONFIG
 import random as _random
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-DEBUG = False
-TIMEOUT = 1000
-CACHE_TIMEOUT = 0.01
-ENABLE_QUICK_OUT = True
-QUICK_OUT_FACTOR = 2
+TIMEOUT = CONFIG["solver"]["timeout"]
+CACHE_TIMEOUT = CONFIG["solver"]["cache_timeout"]
+ENABLE_QUICK_OUT = CONFIG["solver"]["enable_quick_out"]
+QUICK_OUT_FACTOR = CONFIG["solver"]["quick_out_factor"]
+DEBUG = CONFIG["solver"]["debug"]
 
 
 # ---------------------------------------------------------------------------

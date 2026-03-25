@@ -1,0 +1,28 @@
+[general]
+default_workspace = "workspace/stable"
+
+[solver]
+timeout = 1000
+cache_timeout = 0.01
+enable_quick_out = true
+quick_out_factor = 2
+debug = false
+
+[generation]
+num_scrambles = 250
+num_alg_solves = 20
+
+[parallel]
+enabled = true
+
+# If null → auto-detect based on memory
+# max_workers = null
+
+# Fraction of total system memory allowed (0.0–1.0)
+memory_fraction = 0.3
+
+# Fallback estimate per worker (GB)
+memory_per_worker_gb = 6
+
+# Minimum free memory buffer (GB)
+safety_buffer_gb = 8
