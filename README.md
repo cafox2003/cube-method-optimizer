@@ -127,3 +127,9 @@ pytest tests/
   * `workspace/stable/` → persistent, curated methods and data
   * `workspace/scratch/` → temporary discovery output
 * Editable install (`pip install -e .`) ensures `src/` is correctly added to Python’s module path
+
+
+---
+Acknowledgements
+
+This project builds on top of [kubesolver](https://github.com/kuba97531/kubesolver), a high-performance Rubik’s Cube solver by kuba97531.
