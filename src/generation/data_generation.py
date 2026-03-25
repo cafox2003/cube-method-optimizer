@@ -461,20 +461,39 @@ def evaluate_solves(method_list: list, workspace_root: str, scorer=score_method)
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
+def _has_solves(workspace_root: str, method: Method) -> bool:
+    path = _solves_path(workspace_root, method.name)
+    return os.path.exists(path) and os.path.getsize(path) > 0
 
 def main():
-    default_ws = CONFIG["general"]["default_workspace"]
+    default_ws = CONFIG["general"]["scratch_workspace"]
     workspace  = sys.argv[1] if len(sys.argv) > 1 else default_ws
     dsl_dir    = os.path.join(workspace, "dsl")
 
     print("[1/4] Loading methods...")
-    zz        = method_from_file(os.path.join(dsl_dir, "zz_method.dsl"))
-    cfop      = method_from_file(os.path.join(dsl_dir, "cfop_method.dsl"))
-    roux      = method_from_file(os.path.join(dsl_dir, "roux_method.dsl"))
-    beginners = method_from_file(os.path.join(dsl_dir, "beginners_method.dsl"))
-    petrus    = method_from_file(os.path.join(dsl_dir, "petrus_method.dsl"))
-    apb       = method_from_file(os.path.join(dsl_dir, "apb.dsl"))
-    methods   = [zz, cfop, roux, beginners, petrus, apb]
+    # zz        = method_from_file(os.path.join(dsl_dir, "zz_method.dsl"))
+    # cfop      = method_from_file(os.path.join(dsl_dir, "cfop_method.dsl"))
+    # roux      = method_from_file(os.path.join(dsl_dir, "roux_method.dsl"))
+    # beginners = method_from_file(os.path.join(dsl_dir, "beginners_method.dsl"))
+    # petrus    = method_from_file(os.path.join(dsl_dir, "petrus_method.dsl"))
+    # apb       = method_from_file(os.path.join(dsl_dir, "apb.dsl"))
+    # methods   = [zz, cfop, roux, beginners, petrus, apb]
+    # print("[1/4] Loading methods from DSL directory...")
+    methods = []
+    for filename in os.listdir(dsl_dir):
+        if not filename.endswith(".dsl"):
+            continue
+
+        path = os.path.join(dsl_dir, filename)
+
+        try:
+            method = method_from_file(path)
+            methods.append(method)
+        except Exception as e:
+            print(f"[WARN] Failed to load {filename}: {e}")
+
+    methods = [m for m in methods if not _has_solves(workspace, m)]
+    print(f"[INFO] Loaded {len(methods)} methods.")
 
     print(f"[2/4] Generating algorithms ({NUM_ALG_SOLVES} solves)...")
     generate_algorithms(methods, num_solves=NUM_ALG_SOLVES, workspace_root=workspace)

@@ -11,6 +11,8 @@ import copy
 import random
 import hashlib
 from core.models import Step, Group, Remove, Method
+import os
+from core.dsl import method_from_file, method_to_file, method_to_dsl_text
 
 
 # ---------------------------------------------------------------------------
@@ -93,14 +95,59 @@ def generate_mutations(base_method: Method, n: int, method_list: list[Method] = 
 
     return mutations
 
+# if __name__ == "__main__":
+#     import os
+#     import hashlib
+#     from core.config import CONFIG
+#     from core.dsl import method_from_file, method_to_file, method_to_dsl_text
+#     from core.models import Step, Group
+#
+#     # Workspace / DSL directory
+#     workspace = "workspace/scratch"
+#     dsl_dir = os.path.join(workspace, "dsl")
+#     os.makedirs(dsl_dir, exist_ok=True)
+#
+#     print("[1/3] Loading base methods...")
+#     base_methods = [
+#         method_from_file(os.path.join(dsl_dir, "zz_method.dsl")),
+#         method_from_file(os.path.join(dsl_dir, "cfop_method.dsl")),
+#         method_from_file(os.path.join(dsl_dir, "roux_method.dsl")),
+#     ]
+#
+#     # Combine all methods for cross-method mutation pool
+#     method_pool = base_methods.copy()
+#
+#     print("[2/3] Generating mutations...")
+#     all_mutations = []
+#     for m in base_methods:
+#         mutated_methods = generate_mutations(m, n=5, method_list=method_pool)
+#         all_mutations.extend(mutated_methods)
+#
+#     print("[3/3] Summary of mutations:")
+#     for i, m in enumerate(all_mutations):
+#         # Generate a unique name for the mutation using a hash of the DSL text
+#         dsl_text = method_to_dsl_text(m)
+#         method_hash = hashlib.md5(dsl_text.encode("utf-8")).hexdigest()[:8]
+#         m.name = f"mutation_{method_hash}"
+#
+#         # Write mutated method to file
+#         method_to_file(m, workspace)
+#
+#         # Count steps and constraints
+#         num_steps = sum(1 for item in m.items if isinstance(item, Step)) + \
+#                     sum(len(item.steps) for item in m.items if isinstance(item, Group))
+#         num_constraints = sum(len(s.constraints) for item in m.items
+#                               for s in ([item] if isinstance(item, Step) else item.steps if isinstance(item, Group) else []))
+#
+#         print(f"Mutation {i+1}: {m.name}, steps={num_steps}, constraints={num_constraints}")
+#
+#     print(f"[DONE] Generated {len(all_mutations)} mutated methods.")
 if __name__ == "__main__":
-    import os
-    import hashlib
-    from core.config import CONFIG
-    from core.dsl import method_from_file, method_to_file, method_to_dsl_text
-    from core.models import Step, Group
 
-    # Workspace / DSL directory
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
+
     workspace = "workspace/scratch"
     dsl_dir = os.path.join(workspace, "dsl")
     os.makedirs(dsl_dir, exist_ok=True)
@@ -112,31 +159,40 @@ if __name__ == "__main__":
         method_from_file(os.path.join(dsl_dir, "roux_method.dsl")),
     ]
 
-    # Combine all methods for cross-method mutation pool
+    # Shared mutation pool (IMPORTANT)
     method_pool = base_methods.copy()
 
-    print("[2/3] Generating mutations...")
-    all_mutations = []
-    for m in base_methods:
-        mutated_methods = generate_mutations(m, n=5, method_list=method_pool)
-        all_mutations.extend(mutated_methods)
+    # ------------------------------------------------------------------
+    # Generate mutations
+    # ------------------------------------------------------------------
 
-    print("[3/3] Summary of mutations:")
+    TARGET = 1000
+
+    print(f"[2/3] Generating {TARGET} mutations...")
+    all_mutations = []
+
+    # Use the FIRST method as seed, but full pool is available
+    all_mutations = generate_mutations(
+        base_methods[0],
+        n=TARGET,
+        method_list=method_pool
+    )
+
+    # ------------------------------------------------------------------
+    # Write results
+    # ------------------------------------------------------------------
+
+    print("[3/3] Writing mutations...")
+
     for i, m in enumerate(all_mutations):
-        # Generate a unique name for the mutation using a hash of the DSL text
+        # Stable unique name based on DSL content
         dsl_text = method_to_dsl_text(m)
         method_hash = hashlib.md5(dsl_text.encode("utf-8")).hexdigest()[:8]
         m.name = f"mutation_{method_hash}"
 
-        # Write mutated method to file
         method_to_file(m, workspace)
 
-        # Count steps and constraints
-        num_steps = sum(1 for item in m.items if isinstance(item, Step)) + \
-                    sum(len(item.steps) for item in m.items if isinstance(item, Group))
-        num_constraints = sum(len(s.constraints) for item in m.items
-                              for s in ([item] if isinstance(item, Step) else item.steps if isinstance(item, Group) else []))
+        if (i + 1) % 100 == 0:
+            print(f"  -> Written {i+1}/{TARGET}")
 
-        print(f"Mutation {i+1}: {m.name}, steps={num_steps}, constraints={num_constraints}")
-
-    print(f"[DONE] Generated {len(all_mutations)} mutated methods.")
+    print(f"[DONE] Generated and saved {len(all_mutations)} mutations.")
