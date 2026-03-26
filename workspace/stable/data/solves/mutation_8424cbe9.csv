@@ -1,0 +1,11 @@
+scramble,orientation,Step_FD_RD,Step_FL_UFL,Step_BR_UBR,Step_BL_UBL,Step_FR_UFR,Step_DBL_DBR,Step_UF,Step_GEN,total_moves
+L U D B2 D' F R2 U F D2 F L2 F2 U' F2 L' F U' R L' D R' F R',x2,L2 D B2 R',D2 L D',R2 D R D' R2 F',F' L F' D2 F2 L',B2 L' B' U' L' U L B',B L F' L' B' L F L',B' F' L B F' D' F2,B2 R' B R' B' R2 D2 L' F' L D2 B2,54
+D' L' R D L2 B2 L2 U L B D2 L2 D R' L' B' L B L F R2 B2 R',x2,L' U L' U2 B',U R D2 L R' B2 U' L',F' L2 D F',D L' B D' B' D',R D2 B D B' D2 R',F' L' B' L F L' B L,D B' F L' B F',B2 L B' L B L2 D2 R F R' D2 B2,56
+R U R B2 L R' B D2 U R L F L F2 U R' D2 F R2 F' D2 L' R' F' B,x2,D R2 B R',R2 B' U2 B' U B2 R2,L2 U' R' U L2,R2 F R2 D2,F2 R2 B2 R2 F2 L B2 L,U B' U2 B U2 F U' B' U B F',D' B' F L2 B F' D',F' R U2 B2 D2 L B2 U2 F',55
+L B' R B2 L' F' D2 R' B F L U' B D2 R L2 F' R2 L D' R' D U2,x2,B',D,U L' B' L U2 R2 U,B' D B F,F2 L2 F2 L2 R D R' F2 L2,L2 B2 L' F' L B' D2 B' L2 F,D' L2 B F' D2 B2 F2 L B F',D F2 D B' F L' F2 L' B F',52
+B R' L2 U R' U2 B2 F' D2 R' F D U2 F' U2 L2 D U L B2 D' B',x2,U2,F2 D' F D L D' F,L' D L' F2 L2,L D' L2 D2,L2 R2 D L R2 U' B2 U L,U2 F' L' B' L F L' B L U2,L D2 L' R F2 R',F' U2 B2 R' D2 B2 U2 L' F',51
+B' L' D2 U2 R' D F' L D' L' R F D2 U F U2 F2 R L2 B U2 R,x2,F R2 U' R',D2 L2 F' L2 D2,F' U B L' B' U2 F U,B D B' L2,F D2,B R' U2 R U2 R B' U2 R U2 R',B' F' L B F' D' F2,D' L' U' L' D L U B' R F R' B L,54
+U B2 R U D' L B' D' F L R B2 D2 U' L' R2 U2 D' B' U2 F,x2,L' U' B' R',L2 U L2 B U',D' F2 D2,R2 B D F' D' B' R2,B' L2 F2 D F2 L2 B,R' D U' R' U' R D' U2 R,,B F U' F' D F2 U L F L' F2 D' B',48
+L2 R2 B2 D' L U2 B' U D F2 D' L2 D U R2 L' D2 U2 F' D2 B,x2,U' L' U,B R2 B2 U B2 R2 B',B F2 D2 B' L F2,F' D,B' L' D2 L B,F U2 B D2 B' U2 F L2 F2,L' F2 L R' D2 R,B U' F2 L' F L D F2 U F' D' B' F,51
+U R F2 U D R B2 L D' B2 R2 B R' U F U' R L2 B2 L' B' F' R2 U' B2,x2,B L' R' B',U' B F2 D' B' F2 U,D2,U2 R B' R' U2 L2,L U B' U',B R' U2 R U2 R B' U2 R U2 R',D B' F L' B F',R2 F' R U2 B' R2 F D2 F' R F R2 B,52
+F2 L' B' L' R' U2 L' D2 U' R2 U2 R2 L B' L' R2 D U2 B' D U L' F',x2,F2 U2 R',B R2 B2 U B2 R2 B',B' F' D2 B,D L' B D' B' D',U B2 U',U B' U' B U' B U B' U' B2 U2 B,L D2 L' R F2 R',B2 L D' L' D' R F R' B2 U2 R' F R U2,55

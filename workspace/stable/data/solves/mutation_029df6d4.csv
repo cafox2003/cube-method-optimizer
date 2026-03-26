@@ -1,0 +1,11 @@
+scramble,orientation,Step_BL,Step_FR_UFR,Step_FL_UFL,Step_BR_UBR,Step_UF,Step_FD_RD,Step_GEN,Step_DBL_DBR_DFR,total_moves
+B2 L' R B' L2 U2 L2 B D' R2 L2 B U' D2 R U2 F2 U D2 R' F R,x2,B D L',B D' R',U B' U' B,F2 U2 F R' F2 R F',D' L R' B L' R,U B L B' U2 B L' B',F' U2 F U2 L F' L' R U2 R',F U R2 B D' L2 D B' R2 U' F,52
+B D2 L U2 D' L2 B U' F2 R B2 R' B' F2 U' L' R' B' F U D2 F2 L,x2,U L,U B D2 R',U2 L U' L U L2,U' L2 F U' F L2,B2 F2 U' B2 F2 D,L R' F2 L' R,L' B F R' D' R D B' F' L,D F2 D B2 D' F2 D B2 D2,48
+R' U L U F2 U' B2 L2 B' U F U2 F2 U F R' L' B' U2 F' D',x2,U' F',B' D,R B' R',U' L2 F L2,L2 R2 D' L2 R2,B' F R2 B F' U,B L2 F' L2 B D2 B2 L F L',L2 F' U' B D2 B' U F,40
+L2 B D' B' D F U2 B' F' R2 U2 F2 B2 U R' B2 U L F' U F B2 D' R L,x2,U L,U2 B' U B2,R B' R',B U2 R',L' R B' L R',F2 U' B2 F2 D B2,F R2 F2 L' B2 L' F2 R2 B2 F',U F2 U' B2 D R2 F2 D' B2 L2,43
+R2 D' U2 F2 B2 R B' D' F' L2 F' U B' L' U' L' F R2 L' D2 F' U2 D2 F2 R',x2,F',R' U' R B2,D' F' L2 F D,B U R2,B2 F2 U' B2 F2 D,U B' F R' B F' U,D2 F2 D F L' F' L B' L' B F2 D2,U2 L2 U B2 R2 D' B2 U L2 F2,48
+F R' B2 D' U' B U2 B2 D F B' D2 L D2 B L' D2 L' R D B2 R' F B,x2,B L2,B' D R2 D' R2 D' B,D B' R D,F' U2 F' U' F2,L2 R2 D' L2 R2,B' F R' B F' U2,R' F' L2 F2 L F2 L2 F R,L2 U2 B2 D' F2 D' B2 U F2 L2 U,49
+B2 R' L D2 L' D L2 R2 B' U R2 F' L2 R2 U' L2 R' B2 R B' D B2,x2,F',D U2 B' D2,L2 U2 F' L F L,F' U' F' U' F2,,L F U F' U' L',F' U' B F' L' F L B' U F,,32
+R2 F B2 U B' R' B' D B F L R U2 R2 F U2 F' L D' R B2 L B L,x2,B' D L',B2 U2 F R' F',L F' L F L' U L',U' B' R2 D2,L2 R2 D L2 R2,B' D R2 U' R' D' R' U B,R' B D F' R F2 R' F' D' B' R,L2 D2 R2 D B2 D2 R2 D' L2 U F2,55
+D2 R U2 F' L B2 F' D B U' F' B U' D2 R2 F2 L R' B' R2 L D U' L' B',x2,F2,L B U2 B U2 B2 L',D R D2,R' F2 U F2 R',,U L R' F' L' R,B2 F' D' B' D' L D B D B2 F,D B2 L2 D2 L2 B2 D' B2 D' B2,43
+U B F2 U' L R U B2 D2 U' L U2 F D2 U R' U2 B D2 U' F' B',x2,F D' L',B D2 B U' B' D2 B',U F' L F,D' B2 R,D' L R' B L' R,B2 R2 F2 D' B2 L2 F2,R' U F R B L B' R' F' U' R,L2 F2 U F2 D' B2 U B2 L2 D U2,52

@@ -1,0 +1,11 @@
+scramble,orientation,Step_GEN,Step_BR_MD_UBR,Step_BL_UBL,Step_FL_UFL,Step_FR_UFR,Step_UL,Step_FD_RD,Step_BD_DBL_DBR_DFR_LD,total_moves
+L U D B2 D' F R2 U F D2 F L2 F2 U' F2 L' F U' R L' D R' F R',x2,R F' D2 B L D' F',,,,,,,,7
+B' L' D2 U2 R' D F' L D' L' R F D2 U F U2 F2 R L2 B U2 R,x2,D' B2 R' B' U2 R' D' B',,,,,,,,8
+U B2 R U D' L B' D' F L R B2 D2 U' L' R2 U2 D' B' U2 F,x2,D2 R' F2 L B D U2 F',,,,,,,,8
+D' L' R D L2 B2 L2 U L B D2 L2 D R' L' B' L B L F R2 B2 R',x2,R' F L' R' F2 D' B',,,,,,,,7
+R U R B2 L R' B D2 U R L F L F2 U R' D2 F R2 F' D2 L' R' F' B,x2,R' U2 R B D' F R2 B',,,,,,,,8
+B R' L2 U R' U2 B2 F' D2 R' F D U2 F' U2 L2 D U L B2 D' B',x2,R' U F2 L2 U L F',,,,,,,,7
+F2 L' B' L' R' U2 L' D2 U' R2 U2 R2 L B' L' R2 D U2 B' D U L' F',x2,F2 U F' U B D' B',,,,,,,,7
+L B' R B2 L' F' D2 R' B F L U' B D2 R L2 F' R2 L D' R' D U2,x2,R2 F2 D L' F D' B R',,,,,,,,8
+U R F2 U D R B2 L D' B2 R2 B R' U F U' R L2 B2 L' B' F' R2 U' B2,x2,U R B' F' L' U' F',,,,,,,,7
+L2 R2 B2 D' L U2 B' U D F2 D' L2 D U R2 L' D2 U2 F' D2 B,x2,R B F2 R F' D B',,,,,,,,7
