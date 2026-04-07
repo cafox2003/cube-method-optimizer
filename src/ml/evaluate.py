@@ -39,7 +39,7 @@ def main():
     results.sort(key=lambda r: r[1])
 
     print(f"\n{'Method':<40} {'Actual':>10} {'Predicted':>10} {'Error':>10}")
-    print("-" * 72)
+    
     for name, actual, predicted in results:
         error = predicted - actual
         print(f"{name:<40} {actual:>10.6f} {predicted:>10.6f} {error:>+10.6f}")
@@ -47,7 +47,7 @@ def main():
     errors = [r[2] - r[1] for r in results]
     if errors:
         mae = np.mean(np.abs(errors))
-        print(f"\n  MAE (mean absolute error): {mae:.6f}")
+        print(f"\n  Mean absolute error: {mae:.6f}")
         print(f"  Max over-prediction:       {max(errors):+.6f}")
         print(f"  Max under-prediction:      {min(errors):+.6f}")
 
