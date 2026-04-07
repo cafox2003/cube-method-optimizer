@@ -51,7 +51,7 @@ def _load_eval_scores(workspace_root: str) -> dict:
             # reads each row, gets method name and score
             # stores in scores dict, only keeps the first and latest score for each method
             for row in reader:
-                name      = row.get("method", "").strip()
+                name = row.get("method", "").strip()
                 score_str = row.get("score", "").strip()
                 if name and score_str and name not in scores:
                     try:
@@ -122,8 +122,8 @@ def load_training_data(workspace_root: str) -> tuple:
 # standardize features to zero mean and variance
 def normalize(X: np.ndarray) -> tuple:
 
-    mean          = X.mean(axis=0)
-    std           = X.std(axis=0)
+    mean = X.mean(axis=0)
+    std = X.std(axis=0)
     # avoid division by zero for constant features
     std[std == 0] = 1   
     return (X - mean) / std, mean, std
@@ -140,7 +140,7 @@ def hypothesis(X_b: np.ndarray, theta: np.ndarray) -> np.ndarray:
 # MSE cost function from slides
 # J(theta) = (1/2m) sum (i)(h(xi)-yi)^2
 def compute_cost(X_b: np.ndarray, y: np.ndarray, theta: np.ndarray) -> float:
-    m      = len(y)
+    m = len(y)
     errors = hypothesis(X_b, theta) - y
     return float((1 / (2 * m)) * np.dot(errors, errors))
 
@@ -155,16 +155,16 @@ def gradient_descent(
     num_iterations: int = NUM_ITERATIONS,
 ) -> tuple:
     # init weight to zero
-    m            = len(y)
-    theta        = np.zeros(X_b.shape[1]) 
+    m = len(y)
+    theta = np.zeros(X_b.shape[1]) 
     cost_history = []
     # compute prediction errors
     for i in range(num_iterations):
         # h(xi) - yi for all i
         errors = hypothesis(X_b, theta) - y
         # vectorised update across all theta j
-        grad   = (1 / m) * (X_b.T @ errors)
-        theta  = theta - alpha * grad
+        grad = (1 / m) * (X_b.T @ errors)
+        theta = theta - alpha * grad
         # log progress every 100 iterations and last iteration
         if i % 100 == 0 or i == num_iterations - 1:
             cost = compute_cost(X_b, y, theta)

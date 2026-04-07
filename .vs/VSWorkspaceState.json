@@ -1,14 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\bin",
-    "\\bin\\linux",
     "\\src",
+    "\\src\\discovery",
+    "\\src\\generation",
+    "\\src\\ml",
+    "\\src\\solver",
     "\\workspace",
     "\\workspace\\stable",
     "\\workspace\\stable\\data",
-    "\\workspace\\stable\\dsl"
+    "\\workspace\\stable\\data\\methods"
   ],
-  "SelectedNode": "\\requirements.txt",
+  "SelectedNode": "\\src\\ml\\train.py",
   "PreviewInSolutionExplorer": false
 }
