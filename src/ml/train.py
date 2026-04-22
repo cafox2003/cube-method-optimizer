@@ -20,7 +20,8 @@ from core.config import CONFIG
 LEARNING_RATE  = 0.005
 # number of iterations for gradient descent
 NUM_ITERATIONS = 2000
-
+# L2 regularisation strength
+LAMBDA         = 0.1
 # paths to methods csv and model file
 def _methods_csv_path(workspace_root: str) -> str:
     return os.path.join(workspace_root, "data", "methods", "methods.csv")
@@ -139,11 +140,12 @@ def hypothesis(X_b: np.ndarray, theta: np.ndarray) -> np.ndarray:
 
 # MSE cost function from slides
 # J(theta) = (1/2m) sum (i)(h(xi)-yi)^2
-def compute_cost(X_b: np.ndarray, y: np.ndarray, theta: np.ndarray) -> float:
+def compute_cost(X_b: np.ndarray, y: np.ndarray, theta: np.ndarray, lam: float = LAMBDA) -> float:
     m = len(y)
     errors = hypothesis(X_b, theta) - y
-    return float((1 / (2 * m)) * np.dot(errors, errors))
-
+    mse = (1 / (2 * m)) * np.dot(errors, errors)
+    penalty = (lam / (2 * m)) * np.dot(theta[1:], theta[1:])  # skip bias
+    return float(mse + penalty)
 
 # Gradient descent
  
@@ -153,26 +155,29 @@ def gradient_descent(
     y: np.ndarray,
     alpha: float = LEARNING_RATE,
     num_iterations: int = NUM_ITERATIONS,
+    lam: float = LAMBDA,
 ) -> tuple:
-    # init weight to zero
     m = len(y)
-    theta = np.zeros(X_b.shape[1]) 
+    theta = np.zeros(X_b.shape[1])
     cost_history = []
-    # compute prediction errors
+
     for i in range(num_iterations):
-        # h(xi) - yi for all i
         errors = hypothesis(X_b, theta) - y
-        # vectorised update across all theta j
         grad = (1 / m) * (X_b.T @ errors)
+
+        # Add regularisation gradient for all weights except bias (index 0)
+        reg = (lam / m) * theta
+        reg[0] = 0.0
+        grad = grad + reg
+
         theta = theta - alpha * grad
-        # log progress every 100 iterations and last iteration
+
         if i % 100 == 0 or i == num_iterations - 1:
-            cost = compute_cost(X_b, y, theta)
+            cost = compute_cost(X_b, y, theta, lam)
             cost_history.append(cost)
             print(f"  iter {i:>5d}   J(θ) = {cost:.8f}")
-    # return final weights and cost history
-    return theta, cost_history
 
+    return theta, cost_history
 
 # Public API
  
