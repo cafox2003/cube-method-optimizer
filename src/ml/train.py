@@ -10,18 +10,15 @@ import sys
 import csv
 import joblib
 import numpy as np
+from sklearn.ensemble import RandomForestRegressor
  
 from ml.features import FEATURE_COLS, extract_from_row
 from core.config import CONFIG
  
 # Hyperparameters
- 
-# step size for gradient descent
-LEARNING_RATE  = 0.005
-# number of iterations for gradient descent
-NUM_ITERATIONS = 2000
-# L2 regularisation strength
-LAMBDA         = 0.1
+RANDOM_STATE = 42
+N_ESTIMATORS = 200
+
 # paths to methods csv and model file
 def _methods_csv_path(workspace_root: str) -> str:
     return os.path.join(workspace_root, "data", "methods", "methods.csv")
@@ -118,67 +115,6 @@ def load_training_data(workspace_root: str) -> tuple:
     # converts features and labels to numpy arrays
     return np.array(X_rows), np.array(y_vals), names
 
-# Normalization
- 
-# standardize features to zero mean and variance
-def normalize(X: np.ndarray) -> tuple:
-
-    mean = X.mean(axis=0)
-    std = X.std(axis=0)
-    # avoid division by zero for constant features
-    std[std == 0] = 1   
-    return (X - mean) / std, mean, std
-
-# Hypothesis
-
-# compute prediction for all m examples
-# h(x) = theta0 + theta1x1 + ... + theta n xn
-def hypothesis(X_b: np.ndarray, theta: np.ndarray) -> np.ndarray:
-    return X_b @ theta
-
-# Cost function
-
-# MSE cost function from slides
-# J(theta) = (1/2m) sum (i)(h(xi)-yi)^2
-def compute_cost(X_b: np.ndarray, y: np.ndarray, theta: np.ndarray, lam: float = LAMBDA) -> float:
-    m = len(y)
-    errors = hypothesis(X_b, theta) - y
-    mse = (1 / (2 * m)) * np.dot(errors, errors)
-    penalty = (lam / (2 * m)) * np.dot(theta[1:], theta[1:])  # skip bias
-    return float(mse + penalty)
-
-# Gradient descent
- 
-# gradient descent for linear regression
-def gradient_descent(
-    X_b: np.ndarray,
-    y: np.ndarray,
-    alpha: float = LEARNING_RATE,
-    num_iterations: int = NUM_ITERATIONS,
-    lam: float = LAMBDA,
-) -> tuple:
-    m = len(y)
-    theta = np.zeros(X_b.shape[1])
-    cost_history = []
-
-    for i in range(num_iterations):
-        errors = hypothesis(X_b, theta) - y
-        grad = (1 / m) * (X_b.T @ errors)
-
-        # Add regularisation gradient for all weights except bias (index 0)
-        reg = (lam / m) * theta
-        reg[0] = 0.0
-        grad = grad + reg
-
-        theta = theta - alpha * grad
-
-        if i % 100 == 0 or i == num_iterations - 1:
-            cost = compute_cost(X_b, y, theta, lam)
-            cost_history.append(cost)
-            print(f"  iter {i:>5d}   J(θ) = {cost:.8f}")
-
-    return theta, cost_history
-
 # Public API
  
 def train(workspace_root: str) -> dict:
@@ -188,24 +124,25 @@ def train(workspace_root: str) -> dict:
     X, y, names = load_training_data(workspace_root)
     m, n = X.shape
     print(f"      {m} scored methods, {n} features.")
- 
-    print("Normalizing features")
-    X_norm, mean, std = normalize(X)
- 
-    # Prepend bias column of 1s for theta0 (intercept)
-    X_b = np.hstack([np.ones((m, 1)), X_norm])     # shape (m, n+1)
-    print(f"      Feature matrix shape: {X_b.shape}  (includes bias column)")
- 
-    print(f"Running gradient descent  (α={LEARNING_RATE}, {NUM_ITERATIONS} iters)")
-    # run gradient descent to get weights
-    theta, cost_history = gradient_descent(X_b, y, alpha=LEARNING_RATE, num_iterations=NUM_ITERATIONS)
- 
-    # get root mean squared error from final cost
-    # cost was (1/2m) sum errors ^2, so multiply by 2 before sqrt
-    train_rmse = float(np.sqrt(2 * cost_history[-1]))
+
+    print(f"Training random forest regressor ({N_ESTIMATORS} trees)")
+    estimator = RandomForestRegressor(
+        n_estimators=N_ESTIMATORS,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+    )
+    estimator.fit(X, y)
+
+    predictions = estimator.predict(X)
+    train_rmse = float(np.sqrt(np.mean((predictions - y) ** 2)))
     print(f"      Final train RMSE: {train_rmse:.6f}")
-    # store model parameters for prediction
-    model = {"theta": theta, "mean": mean, "std": std}
+
+    # Keep the artifact shape dict-based so the rest of the API can stay stable.
+    model = {
+        "model_type": "random_forest",
+        "estimator": estimator,
+        "feature_cols": FEATURE_COLS,
+    }
  
     print("Saving model")
     model_path = _model_path(workspace_root)
@@ -213,10 +150,13 @@ def train(workspace_root: str) -> dict:
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     joblib.dump(model, model_path)
     print(f"      Saved to {model_path}")
-    print(f"\n  Learned parameters:")
-    print(f"      Theta0  {'(bias)':<35s} = {theta[0]:.6f}")
-    for i, (col, w) in enumerate(zip(FEATURE_COLS, theta[1:]), 1):
-        print(f"      θ{i:<2d}  {col:<35s} = {w:.6f}")
+    print("\n  Feature importances:")
+    for col, importance in sorted(
+        zip(FEATURE_COLS, estimator.feature_importances_),
+        key=lambda item: item[1],
+        reverse=True,
+    ):
+        print(f"      {col:<35s} = {importance:.6f}")
  
     return model
 

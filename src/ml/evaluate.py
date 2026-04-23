@@ -20,14 +20,11 @@ def main():
         return
 
     path = os.path.join(workspace, "data", "methods", "methods.csv")
-    INCLUDE = {"ZZ", "CFOP", "Roux", "BEGINNERS", "PETRUS", "APB", "rand_d2de834a"}
 
     results = []
     with open(path, newline="") as f:
         for row in csv.DictReader(f):
             name = row.get("method_name", "").strip()
-            if name not in INCLUDE:
-                continue
             score_str = row.get("score", "").strip()
             if not score_str:
                 continue
@@ -38,16 +35,24 @@ def main():
 
     results.sort(key=lambda r: r[1])
 
-    print(f"\n{'Method':<40} {'Actual':>10} {'Predicted':>10} {'Error':>10}")
+    print(f"\n{'Method':<40} {'Actual':>10} {'Predicted':>10} {'Error':>10} {'Error %':>10}")
     
     for name, actual, predicted in results:
         error = predicted - actual
-        print(f"{name:<40} {actual:>10.6f} {predicted:>10.6f} {error:>+10.6f}")
+        error_pct = (error / actual) * 100 if actual != 0 else float("nan")
+        print(f"{name:<40} {actual:>10.6f} {predicted:>10.6f} {error:>+10.6f} {error_pct:>+9.2f}%")
 
     errors = [r[2] - r[1] for r in results]
     if errors:
         mae = np.mean(np.abs(errors))
+        abs_pct_errors = [
+            abs((predicted - actual) / actual) * 100
+            for _, actual, predicted in results
+            if actual != 0
+        ]
         print(f"\n  Mean absolute error: {mae:.6f}")
+        if abs_pct_errors:
+            print(f"  Mean absolute percentage error: {np.mean(abs_pct_errors):.2f}%")
         print(f"  Max over-prediction:       {max(errors):+.6f}")
         print(f"  Max under-prediction:      {min(errors):+.6f}")
 

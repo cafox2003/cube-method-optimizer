@@ -61,19 +61,17 @@ def invalidate_cache(workspace_root=None):
  
 # apply the learned hypothesis to a single feature vector
 def _predict_from_model(model: dict, x_raw: np.ndarray) -> float:
-    # learned weights of model including bias
+    model_type = model.get("model_type")
+    if model_type == "random_forest":
+        estimator = model["estimator"]
+        return float(estimator.predict(np.asarray([x_raw]))[0])
+
+    # Backward compatibility with previously saved linear models.
     theta = model["theta"]
-    # mean of features (for normalization)
     mean  = model["mean"]
-    # standard deviation of features (for normalization)
     std   = model["std"]
-    # standardize features, ensures model sees data on same scale it was trained on
     x_norm = (x_raw - mean) / std
-    # add bias term at start of feature term
-    # score = theta0 + theta1 x1 + theta1 x2 ...
-    # linear models use the theta0 term as bias weight
     x_b    = np.concatenate([[1.0], x_norm])
-    # dot product to give the score = ... equation
     return float(np.dot(theta, x_b))
 
 # predict score without running solves
