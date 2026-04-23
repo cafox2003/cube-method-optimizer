@@ -12,7 +12,8 @@ debug = false
 [generation]
 num_scrambles = 10
 num_alg_solves = 5
-max_constraints_per_step = 5
+min_constraints_per_step = 3
+max_constraints_per_step = 8
 target_count = 1000
 
 [parallel]
