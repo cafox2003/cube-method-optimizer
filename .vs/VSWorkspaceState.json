@@ -6,11 +6,8 @@
     "\\src\\ml",
     "\\src\\solver",
     "\\workspace",
-    "\\workspace\\stable",
-    "\\workspace\\stable\\scratch",
-    "\\workspace\\stable\\scratch\\data",
-    "\\workspace\\stable\\scratch\\data\\methods"
+    "\\workspace\\stable"
   ],
-  "SelectedNode": "\\workspace\\stable\\scratch\\data\\methods\\methods.csv",
+  "SelectedNode": "\\src\\ml\\train.py",
   "PreviewInSolutionExplorer": false
 }
