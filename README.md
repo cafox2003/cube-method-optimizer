@@ -39,7 +39,17 @@ Run a single solve:
 Generate data:
     python -m generation.data_generation [workspace]
 
-Both default to `workspace/stable` if no workspace argument is provided.
+    Both default to `workspace/stable` if no workspace argument is provided.
+
+Train off Random Forrest
+    python -m ml.train
+
+
+Train off Linear Regression
+    python -m ml.train_lr
+
+Evaluate based off of the training
+    python -m ml.evaluate
 
 ## Workspace
 
