@@ -7,14 +7,25 @@ feeding method vectors into a model live here.
 """
 
 import numpy as np
-from generation.data_generation import METHOD_FIELDNAMES
 
-# Drop identifier and label columns; everything else is a model feature.
+# Must stay in sync with METHOD_FIELDNAMES in data_generation.py.
+# Drop 'method_name' (identifier) and 'score' (label), everything else is a feature
 FEATURE_COLS = [
-    col for col in METHOD_FIELDNAMES
-    if col not in {"method_name", "score"}
+    "num_steps",
+    "num_groups",
+    "num_removes",
+   # "total_constraints", getting rid of for now as its just a sum of num edge corner and orientation constraints
+    "avg_constraints_per_step",
+    "max_constraints_per_step",
+    "num_cache_alg_steps",
+    "num_free_layer_steps",
+    "symmetry_depth",
+    "num_symmetry_orientations",
+    "num_edge_constraints",
+    "num_corner_constraints",
+    "num_orientation_constraints",
+    "constraint_type_diversity",
 ]
-
 
  # extract a feature vector from methods.csv dict row
 def extract_from_row(row: dict) -> np.ndarray:

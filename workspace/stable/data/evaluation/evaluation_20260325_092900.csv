@@ -1,0 +1,7 @@
+method,total_solves,avg_total_moves,num_steps,avg_moves_per_step,num_algs,score
+ZZ,1175,50.98,7,7.28,32,0.019616
+CFOP,900,51.65,7,7.38,88,0.019361
+Roux,600,42.26,6,7.04,44,0.023663
+BEGINNERS,500,76.43,13,5.88,0,0.013084
+PETRUS,450,51.09,7,7.3,27,0.019573
+APB,200,48.09,6,8.02,212,0.020794
